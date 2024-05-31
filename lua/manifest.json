@@ -1,0 +1,23 @@
+{
+    "me": {
+        "startup": "me/startup.lua",
+        "depends": [
+            "shared/NervConnection.lua"
+        ]
+    },
+    "battery": {
+        "startup": "battery/startup.lua",
+        "depends": [
+            "shared/NervConnection.lua"
+        ]
+    },
+    "reactor": {
+        "startup": "reactor/startup.lua",
+        "depends": [
+            "shared/NervConnection.lua",
+            "reactor/NervReactor.lua",
+            "reactor/NervTurbine.lua",
+            "reactor/NervReactorMonitor.lua"
+        ]
+    }
+}

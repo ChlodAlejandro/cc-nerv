@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Magi</title>
+        <link rel="stylesheet" type="text/css" href="/styles/global.css">
+        <style>
+            tr > td:first-child {
+                text-align: right;
+                padding-right: 1em;
+            }
+
+            h1 {
+                margin: 0 0 4px 0;
+            }
+
+            button {
+                margin-right: 4px;
+                padding: 4px 8px;
+                background-color: transparent;
+                border: 1px solid #ff0808;
+                color: #ff0808;
+                border-radius: 4px;
+                cursor: pointer;
+
+                transition: all 0.2s ease;
+            }
+
+            button:hover {
+                background-color: #ff0808;
+                color: black;
+            }
+
+            button:disabled {
+                border-color: #ccc;
+                background-color: #ccc;
+                color: #666;
+            }
+
+            #backgroundImage {
+                position: fixed;
+                height: 50vmin;
+                width: auto;
+                bottom: -8vmin;
+                right: -5vmin;
+                opacity: 0.2;
+                z-index: -10;
+            }
+        </style>
+    </head>
+    <body>
+        <img id="backgroundImage" src="/images/nerv.svg">
+        <h1>Magi</h1>
+        <div id="objectList"><i>Loading...</i></div>
+        <script>
+            var objectList = document.getElementById('objectList');
+            
+            function get(page = 0, count = 50) {
+                objectList.querySelectorAll("button")
+                    .forEach(function (btn) {
+                        btn.toggleAttribute("disabled", true);
+                    });
+
+                fetch(`/api/me/list?${new URLSearchParams({ page, count }).toString()}`)
+                    .then(response => response.json())
+                    .then((data) => {
+                        if (data.error) {
+                            throw new Error(data.message || "Unknown error");
+                        }
+                        objectList.innerHTML = "";
+
+                        var table = document.createElement('table');
+                        for (var item of data.list) {
+                            var row = document.createElement('tr');
+                            var amount = document.createElement('td');
+                            var name = document.createElement('td');
+                            amount.innerText = item.amount;
+                            name.innerText = item.displayName;
+                            row.appendChild(amount);
+                            row.appendChild(name);
+                            table.appendChild(row);
+                        }
+
+                        objectList.appendChild(table);
+
+                        if (page > 0) {
+                            var backButton = document.createElement('button');
+                            backButton.innerText = "Back";
+                            backButton.onclick = () => get(page - 1);
+                            objectList.appendChild(backButton);
+                        }
+
+                        var refreshButton = document.createElement('button');
+                        refreshButton.innerText = "Refresh";
+                        refreshButton.onclick = () => get(page);
+                        objectList.appendChild(refreshButton);
+                        
+                        if (Object.keys(data.list).length >= count) {
+                            var nextButton = document.createElement('button');
+                            nextButton.innerText = "Next";
+                            nextButton.onclick = () => get(page + 1);
+                            objectList.appendChild(nextButton);
+                        }
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                        objectList.innerText = "Error: " + error;
+                    });
+            }
+
+            get(
+                new URLSearchParams(window.location.search).get('page') || 0,
+                new URLSearchParams(window.location.search).get('count') || 50
+            );
+        </script>
+    </body>
+</html>
